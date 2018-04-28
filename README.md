@@ -9,7 +9,7 @@ $ gosh reingau.scm install makiki
 
 To load the installed module, add `gosh-modules/<pkgname>` to the `*load-path*` like:
 
-```
+```scheme
 (use file.util)
 (use util.match)
 
