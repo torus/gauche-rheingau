@@ -6,7 +6,7 @@ Rheingau - a Package Manager for Gauche
 ### Installing a Module
 
 ```
-$ gosh reingau.scm install makiki
+$ gosh $RHEINGAUDIR/rheingau.scm install makiki
 ```
 
 ### Using the Module

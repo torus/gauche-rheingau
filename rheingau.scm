@@ -1,4 +1,4 @@
-(add-load-path "./lib")
+(add-load-path "./lib" :relative)
 (use rheingau)
 
 ;; Command line interface
