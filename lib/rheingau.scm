@@ -46,7 +46,8 @@
     (^[form rename id=?]
       (match form
         [(_ pkg)
-         `(begin (add-load-path ,(build-path "." "gosh-modules" (symbol->string pkg)))
-                 (use ,pkg)
+         `(begin (require ,(build-path "." "gosh-modules"
+                                       (symbol->string pkg) (symbol->string pkg)))
+                 (import ,pkg)
                  )]
         [_ (error "malformed rheingau-use:" form)]))))
