@@ -47,5 +47,30 @@
     (acons name thunk obj)
 ))
 
+(define (from-git/build name . alist)
+  (define dest-dir (build-path "gosh-modules" name))
+  (define (thunk)
+    (let ((script-path #f))
+      (create-directory-tree
+       "gosh-modules"
+       `(".build"
+         ((,name
+           (("build.sh"
+             ,(lambda (path)
+                (let ((repo (cdr (assq 'repo alist)))
+                      (branch (cdr (or (assq 'branch alist) (cons #f #f)))))
+                  (let ((branch-option (if branch #"--branch ~branch" "")))
+                    (print #"rm -rf ~dest-dir")
+                    (print #"git clone --depth 1 ~branch-option ~repo ~dest-dir")
+                    (print #"cd ~dest-dir")
+                    (print #"./DIST gen")
+                    (print #"./configure")
+                    (print #"make")
+                    (set! script-path path))))))))))
+      (sys-system #`"sh ,script-path")))
+  (lambda (obj)
+    (acons name thunk obj)
+))
+
 (define (repo url) (cons 'repo url))
 (define (branch br) (cons 'branch br))
