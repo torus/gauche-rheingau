@@ -1,6 +1,5 @@
 #!/usr/bin/env gosh
 
-(add-load-path "./lib" :relative)
 (use rheingau)
 
 ;; Command line interface
