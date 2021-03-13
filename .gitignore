@@ -1,3 +1,6 @@
 *~
 gosh-modules/
 /app.scm
+config.log
+Makefile
+rheingau.gpd
