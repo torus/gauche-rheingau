@@ -4,7 +4,7 @@
 
 (define-gauche-package "rheingau"
   ;; 
-  :version "1.0"
+  :version "0.1.0"
 
   ;; Description of the package.  The first line is used as a short
   ;; summary.
