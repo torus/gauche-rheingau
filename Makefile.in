@@ -25,11 +25,9 @@ LOCAL_PATHS = "@LOCAL_PATHS@"
 # Module-specific stuff
 PACKAGE   = rheingau
 
-ARCHFILES =
-SCMFILES  = $(srcdir)/rheingau.scm $(srcdir)/barrel.scm rh1
-HEADERS   =
+SCMFILES  = $(srcdir)/rheingau.scm $(srcdir)/barrel.scm
+SCRIPTFILES = $(srcdir)/rh1
 
-TARGET    = $(ARCHFILES)
 GENERATED =
 CONFIG_GENERATED = Makefile config.cache config.log config.status \
 		   configure.lineno autom4te*.cache $(PACKAGE).gpd
@@ -47,19 +45,17 @@ check : all
 	$(GOSH) -I. -I$(srcdir) $(srcdir)/test.scm > test.log
 
 install : all
-	$(INSTALL) -m 444 -T $(GAUCHE_PKGINCDIR) $(HEADERS)
 	$(INSTALL) -m 444 -T $(GAUCHE_PKGLIBDIR) $(SCMFILES)
-	$(INSTALL) -m 555 -T $(bindir) $(ARCHFILES)
+	$(INSTALL) -m 555 -T $(bindir) $(SCRIPTFILES)
 	$(INSTALL) -m 444 -T $(GAUCHE_PKGLIBDIR)/.packages $(PACKAGE).gpd
 
 uninstall :
-	$(INSTALL) -U $(GAUCHE_PKGINCDIR) $(HEADERS)
 	$(INSTALL) -U $(GAUCHE_PKGLIBDIR) $(SCMFILES)
-	$(INSTALL) -U $(GAUCHE_PKGARCHDIR) $(ARCHFILES)
+	$(INSTALL) -U $(bindir) $(SCRIPTFILES)
 	$(INSTALL) -U $(GAUCHE_PKGLIBDIR)/.packages $(PACKAGE).gpd
 
 clean :
-	rm -rf core $(TARGET) $(GENERATED) *~ test.log so_locations
+	rm -rf core $(GENERATED) *~ test.log so_locations
 
 distclean : clean
 	rm -rf $(CONFIG_GENERATED)
