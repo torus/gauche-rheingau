@@ -5,49 +5,78 @@
   (use file.util)
   (use util.match)
 
-  (export rheingau-install rheingau-use)
-  )
+  (export rheingau-use
+          rheingau-add-module
+          rheingau-find-module
+          rheingau-build-path
+          ))
 
 (select-module rheingau)
-
-(define (rheingau-install pkg)
-  (define dest-dir (build-path "gosh-modules" pkg))
-
-  (unless (file-type dest-dir)
-
-    (print #`"Installing ,pkg")
-
-    ;; https://stackoverflow.com/questions/46762667/firebase-firestore-rest-example
-    (let* ((server "firestore.googleapis.com")
-           (project "project-6711518500697978711")
-           (uri #`"/v1beta1/projects/,|project|/databases/(default)/documents/rheingau/,|pkg|"))
-      (let-values (((status header body) (http-get server uri :secure #t)))
-        (unless (string=? status "200") (error #`"Couldn't find the package: ,|pkg|."))
-
-        (let* ((port (open-input-string body))
-               (data (parse-json port))
-               (fields (cdr (assoc "fields" data string=?)))
-               (repo-elem (cdr (assoc "repo" fields string=?)))
-               (repo (cdr (assoc "stringValue" repo-elem string=?))))
-
-          (let ((script-path #f))
-            (create-directory-tree
-             "gosh-modules"
-             `(".build"
-               ((,pkg
-                 (("build.sh"
-                   ,(lambda (path)
-                      (print #`"git clone ,repo ,dest-dir")
-                      (set! script-path path))))))))
-            (sys-system #`"sh ,script-path")))))))
 
 (define-syntax rheingau-use
   (er-macro-transformer
     (^[form rename id=?]
       (match form
-        [(_ pkg)
-         `(begin (require ,(build-path "." "gosh-modules"
-                                       (symbol->string pkg) (symbol->string pkg)))
-                 (import ,pkg)
+        [(_ pkg . options)
+         `(begin (add-load-path ,(module-load-path pkg))
+                 (use ,pkg ,@options)
                  )]
         [_ (error "malformed rheingau-use:" form)]))))
+
+(define *index* #f)
+
+(define (rheingau-find-module index mod-path)
+  (if (null? index)
+      ()
+      (if (string=? (symbol->string (caar index))
+                    (car mod-path))
+          (cons (car mod-path) (rheingau-find-module (cdar index) (cdr mod-path)))
+          (rheingau-find-module (cdr index) mod-path))))
+
+(define (rheingau-build-path index mod)
+  (let ((pkg (rheingau-find-module index (package-name->path mod))))
+    (apply build-path "." "gosh-modules"
+           (string-join pkg ".")
+           (package-name->path mod))))
+
+(define (rheingau-build-load-path index mod)
+  (let ((pkg (rheingau-find-module index (package-name->path mod))))
+    (build-path "." "gosh-modules" (string-join pkg "."))))
+
+(define (module-path mod)
+  (unless *index*
+    (set! *index* (with-input-from-file
+                      (build-path "gosh-modules" ".barrel-index.scm")
+                    read)))
+
+  (rheingau-build-path *index* mod))
+
+(define (module-load-path mod)
+  (unless *index*
+    (set! *index* (with-input-from-file
+                      (build-path "gosh-modules" ".barrel-index.scm")
+                    read)))
+
+  (rheingau-build-load-path *index* mod))
+
+(define (package-name->path name)
+  (string-split (symbol->string name) "."))
+
+(define (rheingau-add-module tree name)
+  (define (iter branches path)
+    (if (null? path)
+        branches
+        (let loop ((branches branches))
+          (if (null? branches)
+              (list (cons (car path)
+                          (if (null? (cdr path))
+                              ()
+                              (iter () (cdr path)))))
+              (if (string=? (car path) (caar branches))
+                  (cons (cons (caar branches)
+                              (iter (cdar branches)
+                                    (cdr path)))
+                        (cdr branches))
+                  (cons (car branches) (loop (cdr branches)))
+                  )))))
+  (iter tree (package-name->path name)))
