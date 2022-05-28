@@ -1,5 +1,8 @@
 #!/usr/bin/env gosh
 
+(use util.match)
+(use file.util)
+
 (add-load-path "./lib" :relative)
 (use rheingau)
 
@@ -8,21 +11,27 @@
   (let ((command (cadr args)))
     (case (string->symbol command)
       ((install i)
-       (if (null? (cddr args))
-           (load-barrel)
-           (let ((pkg (caddr args)))
-             (rheingau-install pkg))))))
+       (load-barrel))))
   0)
 
 (define (load-barrel)
+  (define module-tree '())
   (require "barrel")
   (let* ((bar (with-input-from-file "barrel.scm" read))
          (pkg (eval bar (find-module 'barrel)))
          (deps (cdr (assq 'dependencies pkg))))
     (when deps
-          (for-each (lambda (dep)
-                      (print #`"Installing ,(car dep)")
-                      ((cdr dep))
-                      ) deps))
-    )
-)
+      (for-each (lambda (dep)
+                  (match dep
+                         ((name . thunk)
+                          (print #`"Installing ,name")
+                          (thunk)
+                          (set! module-tree
+                                (rheingau-add-module module-tree name)))))
+                deps)
+      (with-output-to-file (build-path "gosh-modules" ".barrel-index.scm")
+        (^[] (print module-tree))))))
+
+;; Local Variables: ***
+;; mode: scheme ***
+;; End: ***

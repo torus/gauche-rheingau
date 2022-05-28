@@ -77,8 +77,36 @@
         ("f" ("g" ("h" ("i")))))
       result))))
 
-;; a b c
-;; a b d
-;; e
-;; f g
-;; f h i
+(test-section "rheingau-find-module")
+
+(test-behavior
+ "find module directory with index"
+ (^[]
+   (let ((result (rheingau-find-module
+                  '((net (oauth) (twitter)) (dbd (sqlite)))
+                  '("net" "twitter" "hoge"))))
+     (assert-equal
+      '("net" "twitter")
+      result))))
+
+(test-section "rheingau-build-path")
+
+(test-behavior
+ "build the actual path for the given module"
+ (^[]
+   (let ((result (rheingau-build-path
+                  '((net (oauth) (twitter)) (dbd (sqlite)))
+                  'net.twitter)))
+     (assert-equal
+      "./gosh-modules/net.twitter/net/twitter"
+      result))))
+
+(test-behavior
+ "build the actual path for the given module with extra part"
+ (^[]
+   (let ((result (rheingau-build-path
+                  '((net (oauth) (twitter)) (dbd (sqlite)))
+                  'net.twitter.hoge)))
+     (assert-equal
+      "./gosh-modules/net.twitter/net/twitter/hoge"
+      result))))

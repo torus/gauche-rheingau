@@ -27,7 +27,7 @@
         (loop (cdr args) ((car args) obj)))))
 
 (define (from-git name . alist)
-  (define dest-dir (build-path "gosh-modules" name))
+  (define dest-dir (build-path "gosh-modules" (symbol->string name)))
   (define (thunk)
     (let ((script-path #f))
       (create-directory-tree
@@ -48,7 +48,7 @@
 ))
 
 (define (from-git/build name . alist)
-  (define dest-dir (build-path "gosh-modules" name))
+  (define dest-dir (build-path "gosh-modules" (symbol->string name)))
   (define (thunk)
     (let ((script-path #f))
       (create-directory-tree
