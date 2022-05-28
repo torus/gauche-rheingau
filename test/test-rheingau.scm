@@ -1,6 +1,6 @@
 (use gauche.test)
 (test-start "Rheingau")
-(load "./lib/rheingau")
+(load "./rheingau")
 (import rheingau)
 
 (load "./testlib/test-utils")
@@ -110,3 +110,5 @@
      (assert-equal
       "./gosh-modules/net.twitter/net/twitter/hoge"
       result))))
+
+(test-end :exit-on-failure #t)
