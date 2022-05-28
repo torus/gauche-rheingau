@@ -1,0 +1,13 @@
+name: Gauche Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: practicalscheme/gauche
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./configure
+      - run: gauche-package make-tarball
