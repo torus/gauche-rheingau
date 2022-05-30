@@ -6,8 +6,13 @@ on:
 
 jobs:
   build:
-    runs-on: practicalscheme/gauche
+    runs-on: ubuntu-latest
+    container: practicalscheme/gauche:latest
     steps:
       - uses: actions/checkout@v2
       - run: ./configure
       - run: gauche-package make-tarball
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pakcage
+          path: "*.tar.gz"
