@@ -12,7 +12,8 @@ jobs:
       - uses: actions/checkout@v2
       - run: ./configure
       - run: gauche-package make-tarball
+      - run: cp ../*.tgz .
       - uses: actions/upload-artifact@v3
         with:
           name: pakcage
-          path: ../*.tgz
+          path: "*.tgz"
